@@ -3,11 +3,12 @@ require './payment'
 class BankruptcyPlan
   attr_reader :monthly_payment, :total_amount, :amount_owed_to_trustee
 
-  def initialize priority_creditors, secured_creditors, unsecured_amount, num_months
+  def initialize priority_creditors, secured_creditors, unsecured_amount, num_months, split_at
     @priority_creditors = priority_creditors
     @secured_creditors = secured_creditors
     @unsecured_amount = unsecured_amount
     @num_months = num_months.to_f
+    @split_at = split_at - 1
 
     calc_total_amount
     calc_monthly_payment
@@ -35,17 +36,68 @@ class BankruptcyPlan
   end
 
   def next_month
-    payments = []
-    if @priority_creditors.size > 0
-      this_months_amount = @monthly_payment
-      if @priority_creditors[0].amount_owed < @monthly_payment
-        payments << Payment.new(@priority_creditors[0], @priority_creditors[0].amount_owed.round(2))
-        this_months_amount -= @priority_creditors[0].amount_owed
-        @priority_creditors.shift
-      end
-      @priority_creditors[0].amount_owed -= this_months_amount
-      payments << Payment.new(@priority_creditors[0], this_months_amount)
+    @payments = []
+    @this_months_amount = @monthly_payment
+    pay_priority_creditors if @priority_creditors.size > 0
+    pay_secured_creditors if (@secured_creditors.size > 0 and @this_months_amount > 0)
+    pay_unsecured_creditors if @unsecured_amount > 0 and @this_months_amount > 0
+    @payments
+  end
+
+  def pay_unsecured_creditors
+
+  end
+
+  def pay_secured_creditors
+    
+  end
+
+  def pay_priority_creditors
+    if @split_at <= 0
+      split_payment @priority_creditors
+    else
+      pay_one_way
     end
+  end
+
+  def split_payment creditors
+    split_amount = @this_months_amount / creditors.size
+    odd = false
+    if (split_amount.round(2) * creditors.size) > @this_months_amount
+      odd = true
+      split_amount -= 0.01
+    end
+
+    next_amount = split_amount
+    creditors.each_with_index do |priority_creditor, index|
+      amount = next_amount
+      next_amount = split_amount
+
+      if index == (creditors.size - 1) and odd
+        amount = amount + 0.01
+      end
+      payment = Payment.new(priority_creditor, amount)
+      
+      if payment.left_over > 0
+        next_amount = split_amount + payment.left_over
+
+      end
+      @payments << payment
+    end
+    @this_months_amount = next_amount
+  end    
+
+  def pay_one_way
+    payment = Payment.new(@priority_creditors[0], @this_months_amount)
+    if payment.left_over > 0
+      @priority_creditors.shift
+      @split_at -= 1
+      @this_months_amount = payment.left_over
+      pay_one_way
+    else
+      @this_months_amount = 0
+    end
+    @payments << payment
   end
 
   def round_penny money
