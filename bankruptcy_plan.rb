@@ -45,7 +45,7 @@ class BankruptcyPlan
   end
 
   def pay_unsecured_creditors
-
+    split_payment @secured_creditors
   end
 
   def pay_secured_creditors
@@ -60,28 +60,34 @@ class BankruptcyPlan
     end
   end
 
-  def split_payment creditors
-    split_amount = @this_months_amount / creditors.size
-    odd = false
-    if (split_amount.round(2) * creditors.size) > @this_months_amount
-      odd = true
-      split_amount -= 0.01
-    end
-
-    next_amount = split_amount
-    creditors.each_with_index do |priority_creditor, index|
-      amount = next_amount
-      next_amount = split_amount
-
-      if index == (creditors.size - 1) and odd
-        amount = amount + 0.01
+  def split_amounts creditors
+    split_amount = (@this_months_amount * 100).to_i / creditors.size
+    num_balance = (@this_months_amount * 100).to_i % creditors.size
+    splits = []
+    creditors.each_with_index do |c, index| 
+      if index < num_balance
+        splits << split_amount + 0.01 
+      else
+        splits << split_amount
       end
-      payment = Payment.new(priority_creditor, amount)
+    end
+    splits
+  end
+
+  def split_payment creditors
+    split_amounts = split_amounts creditors
+
+    creditors.each_with_index do |priority_creditor, index|
+      payment = Payment.new(priority_creditor, split_amounts[index])
       
       if payment.left_over > 0
-        next_amount = split_amount + payment.left_over
-
+        split_amounts[index + 1] = split_amounts[index + 1] + payment.left_over
       end
+
+      if payment.left_over == 0 and (index == (creditors.size - 1))
+        next_amount = 0
+      end
+
       @payments << payment
     end
     @this_months_amount = next_amount
@@ -90,14 +96,18 @@ class BankruptcyPlan
   def pay_one_way
     payment = Payment.new(@priority_creditors[0], @this_months_amount)
     if payment.left_over > 0
-      @priority_creditors.shift
-      @split_at -= 1
-      @this_months_amount = payment.left_over
-      pay_one_way
+      payment_finished payment.left_over
     else
       @this_months_amount = 0
     end
     @payments << payment
+  end
+
+  def payment_finished left_over
+    @priority_creditors.shift
+    @split_at -= 1
+    @this_months_amount = left_over
+    pay_one_way
   end
 
   def round_penny money

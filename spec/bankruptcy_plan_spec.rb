@@ -9,17 +9,12 @@ describe BankruptcyPlan do
     @child_support = Creditor.new('Child Support', 500)
     @irs = Creditor.new('IRS', 400)
 
-    priority_creditors = [
-                          @apple_law,
-                          @irs,
-                          @child_support
-                          ]
+    @toyota = Creditor.new('Toyota', 4000)
+    @honda = Creditor.new('Honda', 200)
+    @donkey = Creditor.new('Donkey Store', 150.01)
 
-    secured_creditors = [
-                         Creditor.new('Toyota', 4000),
-                         Creditor.new('Honda', 200),
-                         Creditor.new('Donkey Store', 150.01),
-                        ]
+    priority_creditors = [@apple_law, @irs, @child_support]
+    secured_creditors = [@toyota, @honda, @donkey]
     
     @bankruptcy_plan = BankruptcyPlan.new priority_creditors, secured_creditors, 11000, 60, 2
   end
@@ -54,7 +49,10 @@ describe BankruptcyPlan do
   end
 
   it 'can handle more' do
-    payments = [Payment.new(@irs, 49.94, false), Payment.new(@child_support, 199.98, false)]
+    payments = [Payment.new(@irs, 49.94, false), Payment.new(@child_support, 199.98, false),
+                Payment.new(@toyota, 16.69, false), Payment.new(@honda, 16.70, false),
+                Payment.new(@donkey, 16.70, false),
+               ]
     8.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments
   end
