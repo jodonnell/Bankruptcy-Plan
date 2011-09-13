@@ -43,12 +43,14 @@ describe BankruptcyPlan do
   end
 
   it 'can correctly split priority payments' do
+    pending
     payments = [Payment.new(@irs, 150, false), Payment.new(@child_support, 150.01, false)]
     6.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments
   end
 
   it 'can handle more' do
+    pending
     payments = [Payment.new(@irs, 49.94, false), Payment.new(@child_support, 199.98, false),
                 Payment.new(@toyota, 16.69, false), Payment.new(@honda, 16.70, false),
                 Payment.new(@donkey, 16.70, false),

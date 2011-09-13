@@ -45,11 +45,11 @@ class BankruptcyPlan
   end
 
   def pay_unsecured_creditors
-    split_payment @secured_creditors
+    
   end
 
   def pay_secured_creditors
-    
+    #split_payment @secured_creditors
   end
 
   def pay_priority_creditors
@@ -81,7 +81,7 @@ class BankruptcyPlan
       payment = Payment.new(priority_creditor, split_amounts[index])
       
       if payment.left_over > 0
-        split_amounts[index + 1] = split_amounts[index + 1] + payment.left_over
+        split_amounts[index + 1] = split_amounts[index + 1] + payment.left_over if split_amounts.size > index + 1
       end
 
       if payment.left_over == 0 and (index == (creditors.size - 1))
@@ -90,7 +90,7 @@ class BankruptcyPlan
 
       @payments << payment
     end
-    @this_months_amount = next_amount
+    @this_months_amount = split_amounts[split_amounts.size - 1]
   end    
 
   def pay_one_way
