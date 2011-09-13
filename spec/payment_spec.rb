@@ -29,5 +29,15 @@ describe Payments do
     leftover.should == 0
   end
 
+  it 'can handle overflow' do
+    payments = Payments.new(2750, [@apple_law, @child_support, @irs])
+    leftover = payments.make_payments
+
+    @apple_law.amount_owed.should == 0
+    @child_support.amount_owed.should == 0
+    @irs.amount_owed.should == 0
+    leftover.should == 100
+  end
+
 
 end
