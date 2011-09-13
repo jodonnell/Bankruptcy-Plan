@@ -7,10 +7,9 @@ class Payments
   end
 
   def make_payments 
-    split_payment = @payment.to_f / @creditors.size
-    debugger
+    split_payment = @payment.to_f
     while money_owed_to_creditors? && split_payment > 0
-      split_payment = pay_and_return_extra(split_payment)
+      split_payment = pay_and_return_extra(split_payment / @creditors.size)
     end
     split_payment
   end
@@ -23,14 +22,18 @@ class Payments
 
   def pay_and_return_extra split_payment
     extra_amount = 0
-    @creditors.each do |creditor|
+    remove = []
+    @creditors.each_with_index do |creditor, index|
       if creditor.amount_owed > split_payment
         creditor.amount_owed -= split_payment
       else
         extra_amount += split_payment - creditor.amount_owed
         creditor.amount_owed = 0
+        remove << index
       end
     end
+
+    remove.sort.reverse.each { |index| @creditors.delete_at index}
 
     extra_amount
   end
