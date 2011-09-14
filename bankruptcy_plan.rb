@@ -24,7 +24,7 @@ class BankruptcyPlan
   end
 
   def calc_monthly_payment
-    @monthly_payment = round_penny(unrounded_monthly_payment)
+    @monthly_payment = unrounded_monthly_payment
   end
 
   def unrounded_monthly_payment
@@ -32,7 +32,7 @@ class BankruptcyPlan
   end
 
   def calc_amount_owed_to_trustee
-    @amount_owed_to_trustee = round_penny((unrounded_monthly_payment * @num_months) / 0.9)
+    @amount_owed_to_trustee = (unrounded_monthly_payment * @num_months) / 0.9
   end
 
   def next_month
@@ -49,53 +49,24 @@ class BankruptcyPlan
   end
 
   def pay_secured_creditors
-    #split_payment @secured_creditors
+#     Payments.new @this_months_amount, @priority_creditors
+#     @this_months_amount = payments.make_payments
   end
 
   def pay_priority_creditors
     if @split_at <= 0
-      split_payment @priority_creditors
+      payments = Payments.new @monthly_payment, @priority_creditors
+      @this_months_amount = payments.make_payments
     else
       pay_one_way
     end
   end
 
-  def split_amounts creditors
-    split_amount = (@this_months_amount * 100).to_i / creditors.size
-    num_balance = (@this_months_amount * 100).to_i % creditors.size
-    splits = []
-    creditors.each_with_index do |c, index| 
-      if index < num_balance
-        splits << split_amount + 0.01 
-      else
-        splits << split_amount
-      end
-    end
-    splits
-  end
-
-  def split_payment creditors
-    split_amounts = split_amounts creditors
-
-    creditors.each_with_index do |priority_creditor, index|
-      payment = Payment.new(priority_creditor, split_amounts[index])
-      
-      if payment.left_over > 0
-        split_amounts[index + 1] = split_amounts[index + 1] + payment.left_over if split_amounts.size > index + 1
-      end
-
-      if payment.left_over == 0 and (index == (creditors.size - 1))
-        next_amount = 0
-      end
-
-      @payments << payment
-    end
-    @this_months_amount = split_amounts[split_amounts.size - 1]
-  end    
-
   def pay_one_way
-    payment = Payment.new(@priority_creditors[0], @this_months_amount)
-    if payment.left_over > 0
+    payments = Payments.new @monthly_payment, [@priority_creditors[0]]
+    @this_months_amount = payments.make_payments
+
+    if @this_months_amount > 0
       payment_finished payment.left_over
     else
       @this_months_amount = 0

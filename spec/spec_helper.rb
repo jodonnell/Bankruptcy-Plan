@@ -1,5 +1,6 @@
 require 'rubygems'
+require 'money' 
 
 RSpec.configure do |config|
-  # some (optional) config here
+
 end

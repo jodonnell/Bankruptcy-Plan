@@ -7,11 +7,16 @@ class Payments
   end
 
   def make_payments 
-    split_payment = @payment.to_f
+    num_extra_pennies = 0
+    split_payment = @payment
     while money_owed_to_creditors? && split_payment > 0
+      num_extra_pennies += split_payment % @creditors.size
       split_payment = pay_and_return_extra(split_payment / @creditors.size)
     end
-    split_payment
+
+    num_extra_pennies = pay_out_rounding_pennies num_extra_pennies if @creditors.size > 0
+
+    split_payment + num_extra_pennies
   end
 
   def money_owed_to_creditors?
@@ -38,5 +43,13 @@ class Payments
     extra_amount
   end
 
-
+  def pay_out_rounding_pennies extra_pennies
+    pennies_paid_out = 0
+    extra_pennies.times do |index| 
+      pennies_paid_out += 1
+      @creditors[index % @creditors.size].amount_owed -= 1
+      puts "please email me the input figures, this report may be wrong" if @creditors[index % @creditors.size].amount_owed < 0
+    end
+    extra_pennies - pennies_paid_out
+  end
 end
