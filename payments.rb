@@ -17,9 +17,9 @@ class Payments
       split_payment = pay_and_return_extra(split_payment / @creditors.size)
     end
 
-    num_extra_pennies = pay_out_rounding_pennies num_extra_pennies if @creditors.size > 0
-
     condense_payments
+
+    num_extra_pennies = pay_out_rounding_pennies num_extra_pennies if @creditors.size > 0
 
     split_payment + num_extra_pennies
   end
