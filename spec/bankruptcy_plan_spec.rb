@@ -15,8 +15,10 @@ describe BankruptcyPlan do
 
     priority_creditors = [@apple_law, @irs, @child_support]
     secured_creditors = [@toyota, @honda, @donkey]
-    
-    @bankruptcy_plan = BankruptcyPlan.new priority_creditors, secured_creditors, 11000_00, 60, 2
+    unsecured_creditor = Creditor.new('Unsecured', 11000_00)
+
+
+    @bankruptcy_plan = BankruptcyPlan.new priority_creditors, secured_creditors, unsecured_creditor, 60, 2
   end
 
   it 'can sum its debt' do
@@ -49,9 +51,9 @@ describe BankruptcyPlan do
   end
 
   it 'can handle more' do
-    payments = [Payment.new(@irs, 49_94), Payment.new(@child_support, 199_98),
-                Payment.new(@toyota, 16_69), Payment.new(@honda, 16_70),
-                Payment.new(@donkey, 16_70),
+    payments = [Payment.new(@irs, 49_92), Payment.new(@child_support, 200_00),
+                Payment.new(@toyota, 16_70), Payment.new(@honda, 16_70),
+                Payment.new(@donkey, 16_69),
                ]
     8.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments

@@ -50,3 +50,5 @@ end
 print "Amount owed to trustee: "
 puts "%0.2f" % [(bp.amount_owed_to_trustee / 100.0).round(2)]
 
+#'Monthly amount to trustee' / 60
+#'Total amount paid unsecured'
