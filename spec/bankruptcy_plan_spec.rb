@@ -29,8 +29,8 @@ describe BankruptcyPlan do
     @bankruptcy_plan.monthly_payment.should == 300_01
   end
 
-  it 'can get the amount owed to the trustee' do
-    @bankruptcy_plan.amount_owed_to_trustee.should == 20000_02
+  it 'can get the amount owed to the trustee per month' do
+    @bankruptcy_plan.amount_owed_to_trustee_per_month.should == 333_34
   end
 
   it 'can get the creditors for the next month' do

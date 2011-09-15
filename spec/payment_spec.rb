@@ -56,5 +56,14 @@ describe Payments do
     payments.payments[1].payment.should == 150_00
   end
 
+  it 'can correctly split EVERYTHING' do
+    payments = Payments.new(1181_20, [Creditor.new('CFCU', 1721_59), Creditor.new('GEMB', 158_68), Creditor.new('Santadar', 20239_43)])
+    leftover = payments.make_payments
+    payments.payments[0].payment.should == 511_26
+    payments.payments[1].payment.should == 158_68
+    payments.payments[2].payment.should == 511_26
+    leftover.should == 0
+  end
+
 
 end

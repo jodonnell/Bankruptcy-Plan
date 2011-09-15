@@ -6,4 +6,9 @@ class Creditor
     @name = name
     @amount_owed = amount_owed
   end
+
+  def to_s
+    "#{@name} #{@amount_owed}"
+  end
+
 end

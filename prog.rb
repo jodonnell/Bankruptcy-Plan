@@ -38,6 +38,12 @@ months = Input.get_month
 print "Split at: "
 split_at = Input.start_split
 
+# priority_creditors = [Creditor.new('Apple Law', 1750_00), Creditor.new('Child Support', 500_00), Creditor.new('IRS', 400_00)]
+# secured_creditors = [Creditor.new('Toyota', 4000_00), Creditor.new('Honda', 200_00), Creditor.new('Donkey Store', 150_01)]
+# unsecured_creditor = Creditor.new('Unsecured', 11000_00)
+# months = 60
+# split_at = 2
+
 bp = BankruptcyPlan.new priority_creditors, secured_creditors, unsecured_creditor, months, split_at
 month = 1
 while (payments = bp.next_month).size > 0
@@ -48,7 +54,4 @@ while (payments = bp.next_month).size > 0
 end
 
 print "Amount owed to trustee: "
-puts "%0.2f" % [(bp.amount_owed_to_trustee / 100.0).round(2)]
-
-#'Monthly amount to trustee' / 60
-#'Total amount paid unsecured'
+puts "%0.2f" % [(bp.amount_owed_to_trustee_per_month / 100.0).round(2)]

@@ -2,7 +2,7 @@ require './payment'
 require './payments'
 
 class BankruptcyPlan
-  attr_reader :monthly_payment, :total_amount, :amount_owed_to_trustee
+  attr_reader :monthly_payment, :total_amount, :amount_owed_to_trustee_per_month
 
   def initialize priority_creditors, secured_creditors, unsecured_creditor, num_months, split_at
     @priority_creditors = priority_creditors
@@ -10,7 +10,7 @@ class BankruptcyPlan
     @unsecured_creditor = unsecured_creditor
     @num_months = num_months.to_f
     @split_at = split_at - 1
-
+    @total_amount_paid_to_unsecured = 0
     calc_total_amount
     calc_monthly_payment
     calc_amount_owed_to_trustee
@@ -33,7 +33,8 @@ class BankruptcyPlan
   end
 
   def calc_amount_owed_to_trustee
-    @amount_owed_to_trustee = ((unrounded_monthly_payment * @num_months) / 0.9).ceil
+    total_owed_to_trustee = ((unrounded_monthly_payment * @num_months) / 0.9).ceil
+    @amount_owed_to_trustee_per_month = (total_owed_to_trustee / @num_months).ceil
   end
 
   def next_month
