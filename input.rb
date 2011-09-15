@@ -12,10 +12,15 @@ class Input
   end
 
   def self.amount_owed
-    gets.chomp
+    gets.chomp.to_i
   end
 
   def self.start_split
-    gets.chomp
+    gets.chomp.to_i
   end
+
+  def self.get_month
+    gets.chomp.to_i
+  end
+
 end

@@ -49,4 +49,12 @@ describe Payments do
     leftover.should == 0
   end
 
+  it 'can correctly split pennies' do
+    payments = Payments.new(300_01, [@apple_law, @child_support])
+    leftover = payments.make_payments
+    payments.payments[0].payment.should == 150_01
+    payments.payments[1].payment.should == 150_00
+  end
+
+
 end

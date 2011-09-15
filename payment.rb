@@ -1,19 +1,8 @@
 class Payment
-  attr_reader :creditor, :payment, :left_over
-  def initialize c, p, make_payment=true
+  attr_accessor :creditor, :payment
+  def initialize c, p
     @creditor = c
-    if p > @creditor.amount_owed
-      @left_over = p - @creditor.amount_owed
-      @payment = round_penny @creditor.amount_owed.round(2)
-    else
-      @left_over = 0
-      @payment = round_penny p
-    end
-    @creditor.amount_owed -= @payment if make_payment
-  end
-
-  def round_penny money
-    (money * 100).ceil / 100.0
+    @payment = p
   end
 
   def ==(other)
@@ -21,6 +10,8 @@ class Payment
   end
 
   def to_s
-    "#{@creditor.name} $#{@payment} remaining: #{@left_over} creditor owed #{@creditor.amount_owed}"
+    "#{ @creditor.name } %0.2f" % [(@payment / 100.0).round(2)]
   end
+
+
 end

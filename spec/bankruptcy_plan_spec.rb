@@ -32,26 +32,26 @@ describe BankruptcyPlan do
   end
 
   it 'can get the creditors for the next month' do
-    payment = Payment.new @apple_law, 300_01, false
+    payment = Payment.new @apple_law, 300_01
     @bankruptcy_plan.next_month.should == [payment]
   end
 
   it 'can correctly split payments' do
-    payments = [Payment.new(@irs, 50_06, false), Payment.new(@apple_law, 249_95, false)]
+    payments = [Payment.new(@irs, 50_06), Payment.new(@apple_law, 249_95)]
     5.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments
   end
 
   it 'can correctly split priority payments' do
-    payments = [Payment.new(@irs, 150_00, false), Payment.new(@child_support, 150_01, false)]
+    payments = [Payment.new(@irs, 150_01), Payment.new(@child_support, 150_00)]
     6.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments
   end
 
   it 'can handle more' do
-    payments = [Payment.new(@irs, 49_94, false), Payment.new(@child_support, 199_98, false),
-                Payment.new(@toyota, 16_69, false), Payment.new(@honda, 16_70, false),
-                Payment.new(@donkey, 16_70, false),
+    payments = [Payment.new(@irs, 49_94), Payment.new(@child_support, 199_98),
+                Payment.new(@toyota, 16_69), Payment.new(@honda, 16_70),
+                Payment.new(@donkey, 16_70),
                ]
     8.times { @bankruptcy_plan.next_month }
     @bankruptcy_plan.next_month.should == payments

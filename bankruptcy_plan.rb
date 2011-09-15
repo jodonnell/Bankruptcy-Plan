@@ -1,12 +1,13 @@
 require './payment'
+require './payments'
 
 class BankruptcyPlan
   attr_reader :monthly_payment, :total_amount, :amount_owed_to_trustee
 
-  def initialize priority_creditors, secured_creditors, unsecured_amount, num_months, split_at
+  def initialize priority_creditors, secured_creditors, unsecured_creditor, num_months, split_at
     @priority_creditors = priority_creditors
     @secured_creditors = secured_creditors
-    @unsecured_amount = unsecured_amount
+    @unsecured_creditor = unsecured_creditor
     @num_months = num_months.to_f
     @split_at = split_at - 1
 
@@ -19,20 +20,20 @@ class BankruptcyPlan
     sum = 0
     @priority_creditors.each {|creditor| sum += creditor.amount_owed}
     @secured_creditors.each {|creditor| sum += creditor.amount_owed}
-    sum += @unsecured_amount
-    @total_amount = sum.round(2)
+    sum += @unsecured_creditor.amount_owed
+    @total_amount = sum
   end
 
   def calc_monthly_payment
-    @monthly_payment = unrounded_monthly_payment
+    @monthly_payment = unrounded_monthly_payment.ceil
   end
 
   def unrounded_monthly_payment
-    @total_amount / @num_months
+    @total_amount / @num_months.to_f
   end
 
   def calc_amount_owed_to_trustee
-    @amount_owed_to_trustee = (unrounded_monthly_payment * @num_months) / 0.9
+    @amount_owed_to_trustee = ((unrounded_monthly_payment * @num_months) / 0.9).ceil
   end
 
   def next_month
@@ -40,38 +41,43 @@ class BankruptcyPlan
     @this_months_amount = @monthly_payment
     pay_priority_creditors if @priority_creditors.size > 0
     pay_secured_creditors if (@secured_creditors.size > 0 and @this_months_amount > 0)
-    pay_unsecured_creditors if @unsecured_amount > 0 and @this_months_amount > 0
-    @payments
+    pay_unsecured_creditors if @unsecured_creditor.amount_owed > 0 and @this_months_amount > 0
+    @payments.flatten
   end
 
   def pay_unsecured_creditors
-    
+    payments = Payments.new @this_months_amount, [@unsecured_creditor]
+    @this_months_amount = payments.make_payments
+    @payments << payments.payments
   end
 
   def pay_secured_creditors
-#     Payments.new @this_months_amount, @priority_creditors
-#     @this_months_amount = payments.make_payments
+    payments = Payments.new @this_months_amount, @secured_creditors
+    @this_months_amount = payments.make_payments
+    @payments << payments.payments
   end
 
   def pay_priority_creditors
     if @split_at <= 0
       payments = Payments.new @monthly_payment, @priority_creditors
       @this_months_amount = payments.make_payments
+      @payments = payments.payments
     else
+      @this_months_amount = @monthly_payment
       pay_one_way
     end
   end
 
   def pay_one_way
-    payments = Payments.new @monthly_payment, [@priority_creditors[0]]
+    payments = Payments.new @this_months_amount, [@priority_creditors[0]]
     @this_months_amount = payments.make_payments
 
     if @this_months_amount > 0
-      payment_finished payment.left_over
+      payment_finished @this_months_amount
     else
       @this_months_amount = 0
     end
-    @payments << payment
+    @payments << payments.payments[0]
   end
 
   def payment_finished left_over
